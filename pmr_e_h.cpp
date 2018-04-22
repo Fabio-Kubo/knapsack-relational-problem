@@ -29,8 +29,8 @@ typedef struct Item {
     double valuePerWeight;
     double valueRelations;
 
-    Item(int index, int value, int weight) : index(index), value(value), weight(weight) {
-        priority = 0;
+    Item(int index, int value, int weight, int priority) : index(index), value(value),
+                                                           weight(weight),  priority(priority) {
         valuePerWeight = 0;
         valueRelations = 0;
     }
@@ -51,10 +51,11 @@ void initializeProblemParameters(int capacity, int quantItens, matriz &relation)
     problemParameters.relations = relation;
 }
 
-void initializeItems(vector<int> &v, vector<int> &s) {
+void initializeItemsBacktracking(vector<int> &v, vector<int> &s) {
 
     for (int i = 0; i < problemParameters.itemsQuantity; i++) {
-        items.emplace_back(i, v[i], s[i]);
+        //set priority with weight value for performance reasons
+        items.emplace_back(i, v[i], s[i], s[i]);
     }
 }
 
@@ -94,20 +95,18 @@ void backtracking(int i, int currentValue, int currentWeight, vector<int> &curre
         return;
     }
 
-    if (i == problemParameters.itemsQuantity) {
+    if (i == problemParameters.itemsQuantity || (currentWeight + items[i].weight) > problemParameters.capacity) {
         if (currentValue > (*bestValue)) {
             (*bestValue) = currentValue;
             updateBestSolutionItems(currentItems, bestKnapsackItems);
         }
     } else {
         //add current item into knapsack
-        if ((currentWeight + items[i].weight) <= problemParameters.capacity) {
-            currentItems[i] = 1;
-            int totalItemValue = calculateTotalItemValue(i, currentItems);
+        currentItems[i] = 1;
+        int totalItemValue = calculateTotalItemValue(i, currentItems);
 
-            backtracking(i + 1, currentValue + totalItemValue,  currentWeight + items[i].weight, currentItems,
-                         bestValue, bestKnapsackItems, maxTime);
-        }
+        backtracking(i + 1, currentValue + totalItemValue, currentWeight + items[i].weight, currentItems,
+                     bestValue, bestKnapsackItems, maxTime);
 
         //remove current item from knapsack
         currentItems[i] = 0;
@@ -122,11 +121,14 @@ int algE(int capacity, int quantItens, vector<int> s, vector<int> v, matriz &rel
     clockBefore = clock();
 
     initializeProblemParameters(capacity, quantItens, relation);
-    initializeItems(v, s);
+    initializeItemsBacktracking(v, s);
 
     vector<int> currentKnapsackItems(problemParameters.itemsQuantity, 0);
 
     int bestValue = -10000;
+
+    //Sorting by priority
+    std::sort(items.begin(), items.end());
 
     backtracking(0, 0, 0, currentKnapsackItems, &bestValue, itensMochila, maxTime);
 
