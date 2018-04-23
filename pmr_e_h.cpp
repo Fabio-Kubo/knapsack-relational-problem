@@ -30,7 +30,7 @@ typedef struct Item {
     double valueRelations;
 
     Item(int index, int value, int weight, int priority) : index(index), value(value),
-                                                           weight(weight),  priority(priority) {
+                                                           weight(weight), priority(priority) {
         valuePerWeight = 0;
         valueRelations = 0;
     }
@@ -59,6 +59,37 @@ void initializeItemsBacktracking(vector<int> &v, vector<int> &s) {
     }
 }
 
+double calculatePriorityA(int value, int weight) {
+
+    return weight == 0 ? 10000 : value / weight;
+}
+
+double calculatePriorityB(int i, vector<int> &v, vector<int> &s) {
+    double valueRelations = 0;
+
+    for (int j = 0; j < problemParameters.itemsQuantity; j++) {
+        if (s[j] == 0) {
+            //divides by two so we don't count two times
+            items[i].valueRelations += problemParameters.relations[i][j] / 2;
+        }
+        else {
+            valueRelations +=
+                    (problemParameters.relations[i][j] / s[j]) / 2;
+        }
+    }
+
+    return s[i] == 0 ? v[i] + valueRelations
+            : v[i] / s[i] + valueRelations;
+}
+
+void initializeItemsHeuristic(vector<int> &v, vector<int> &s) {
+
+    for (int i = 0; i < problemParameters.itemsQuantity; i++) {
+        //items.emplace_back(i, v[i], s[i], calculatePriorityA(v[i], s[i]));
+        items.emplace_back(i, v[i], s[i], calculatePriorityB(i, v, s));
+    }
+}
+
 bool timeIsOver(int maxTime) {
 
     if (maxTime == 0) {
@@ -77,14 +108,14 @@ void updateBestSolutionItems(vector<int> &currentItems, vector<int> &bestItems) 
     }
 }
 
-int calculateTotalItemValue(int index, vector<int> &currentItems) {
+int calculateTotalItemValue(int i, vector<int> &currentItems) {
     int relationsValue = 0;
 
-    for (int i = 0; i < index; i++) {
-        relationsValue += problemParameters.relations[index][i] * currentItems[i];
+    for (int j = 0; j < i; j++) {
+        relationsValue += problemParameters.relations[items[i].index][items[j].index] * currentItems[items[j].index];
     }
 
-    return items[index].value + relationsValue;
+    return items[i].value + relationsValue;
 }
 
 void backtracking(int i, int currentValue, int currentWeight, vector<int> &currentItems,
@@ -102,14 +133,14 @@ void backtracking(int i, int currentValue, int currentWeight, vector<int> &curre
         }
     } else {
         //add current item into knapsack
-        currentItems[i] = 1;
+        currentItems[items[i].index] = 1;
         int totalItemValue = calculateTotalItemValue(i, currentItems);
 
         backtracking(i + 1, currentValue + totalItemValue, currentWeight + items[i].weight, currentItems,
                      bestValue, bestKnapsackItems, maxTime);
 
         //remove current item from knapsack
-        currentItems[i] = 0;
+        currentItems[items[i].index] = 0;
         backtracking(i + 1, currentValue, currentWeight, currentItems,
                      bestValue, bestKnapsackItems, maxTime);
     }
@@ -137,7 +168,32 @@ int algE(int capacity, int quantItens, vector<int> s, vector<int> v, matriz &rel
 
 int algH(int capacity, int quantItens, vector<int> s, vector<int> v, matriz &relation, vector<int> &itensMochila,
          int maxTime) {
-    return 0;
+
+    clockBefore = clock();
+    initializeProblemParameters(capacity, quantItens, relation);
+    initializeItemsHeuristic(v, s);
+
+    //Descending sorting by priority
+    std::sort(items.rbegin(), items.rend());
+
+    int currentWeight = 0;
+    int currentTotalValue = 0;
+
+    //keep adding items until knapsack reaches its capacity
+    for (int i = 0; i < problemParameters.itemsQuantity; i++) {
+        if ((currentWeight + items[i].weight) <= problemParameters.capacity) {
+            itensMochila[items[i].index] = 1;
+            currentTotalValue += calculateTotalItemValue(i, itensMochila);
+            currentWeight += items[i].weight;
+        }
+
+        if (timeIsOver(maxTime)) {
+            cout << "Time is over" << endl;
+            return currentTotalValue;
+        }
+    }
+
+    return currentTotalValue;
 }
 
 
