@@ -69,7 +69,7 @@ double calculatePriorityB(int i, vector<int> &v, vector<int> &s) {
 
     for (int j = 0; j < problemParameters.itemsQuantity; j++) {
         if (s[j] == 0) {
-            items[i].valueRelations += problemParameters.relations[i][j] / 2;
+            valueRelations += problemParameters.relations[i][j] / 2;
         } else {
             valueRelations += (problemParameters.relations[i][j] / s[j]) / 2;
         }
