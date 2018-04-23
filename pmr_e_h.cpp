@@ -69,17 +69,14 @@ double calculatePriorityB(int i, vector<int> &v, vector<int> &s) {
 
     for (int j = 0; j < problemParameters.itemsQuantity; j++) {
         if (s[j] == 0) {
-            //divides by two so we don't count two times
             items[i].valueRelations += problemParameters.relations[i][j] / 2;
-        }
-        else {
-            valueRelations +=
-                    (problemParameters.relations[i][j] / s[j]) / 2;
+        } else {
+            valueRelations += (problemParameters.relations[i][j] / s[j]) / 2;
         }
     }
 
     return s[i] == 0 ? v[i] + valueRelations
-            : v[i] / s[i] + valueRelations;
+                     : v[i] / s[i] + valueRelations;
 }
 
 void initializeItemsHeuristic(vector<int> &v, vector<int> &s) {
