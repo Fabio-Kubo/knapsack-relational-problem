@@ -174,7 +174,6 @@ int algExato(int capacity, int quantItens, vector<int> s, vector<int> v, matriz 
               isRelationInKnapsackVariable[i][j] = model.addVar(0.0, 1.0, relation[i][j] / 2, GRB_BINARY, "");
 
               GRBLinExpr exprA, exprB, exprC;
-
               exprA = isRelationInKnapsackVariable[i][j] - isItemInKnapsackVariable[i];
               exprB = isRelationInKnapsackVariable[i][j] - isItemInKnapsackVariable[j];
               exprC = isRelationInKnapsackVariable[i][j] - isItemInKnapsackVariable[i] - isItemInKnapsackVariable[j];
