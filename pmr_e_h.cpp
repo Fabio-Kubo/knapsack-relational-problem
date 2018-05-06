@@ -14,6 +14,8 @@
 #include <iostream>
 #include <float.h>
 #include "pmr_e_h.h"
+#include "gurobi_c++.h"
+
 
 typedef struct ProblemParameters {
     int capacity;
@@ -141,6 +143,60 @@ void backtracking(int i, int currentValue, int currentWeight, vector<int> &curre
         backtracking(i + 1, currentValue, currentWeight, currentItems,
                      bestValue, bestKnapsackItems, maxTime);
     }
+}
+
+int algExato(int capacity, int quantItens, vector<int> s, vector<int> v, matriz &relation, vector<int>& itensMochila, int maxTime) {
+
+    GRBEnv env = GRBEnv();
+    GRBModel model = GRBModel(env);
+    model.set(GRB_StringAttr_ModelName, "Problema da Mochila Relacional");
+
+    if(maxTime != 0) {
+        model.getEnv().set(GRB_DoubleParam_TimeLimit, maxTime);
+    }
+
+    model.set(GRB_IntAttr_ModelSense, GRB_MAXIMIZE);
+
+    //creating variables
+    vector<GRBVar> isItemInKnapsackVariable(quantItens);
+    vector< vector<GRBVar> > isRelationInKnapsackVariable(quantItens, vector<GRBVar>(quantItens));
+    GRBLinExpr knapsackWeight;
+
+    for (int i = 0; i < quantItens; i++) {
+        isItemInKnapsackVariable[i] = model.addVar(0.0, 1.0, v[i], GRB_BINARY, "");
+        knapsackWeight += isItemInKnapsackVariable[i] * s[i];
+
+        for (int j = 0; j < quantItens; j++) {
+            isRelationInKnapsackVariable[i][j] = model.addVar(0.0, 1.0, relation[i][j] / 2, GRB_BINARY, "");
+
+            model.addConstr(isRelationInKnapsackVariable[i][j] <= isItemInKnapsackVariable[i]);
+            model.addConstr(isRelationInKnapsackVariable[i][j] <= isItemInKnapsackVariable[j]);
+            model.addConstr(isRelationInKnapsackVariable[i][j] >= isItemInKnapsackVariable[i] + isItemInKnapsackVariable[j] - 1);
+        }
+    }
+
+    //model.update();
+    model.addConstr(knapsackWeight <= capacity);
+
+    model.update();
+    model.optimize();
+
+    int totalValue = 0;
+
+    for (int i = 0; i < quantItens; i++) {
+
+        if (isItemInKnapsackVariable[i].get(GRB_DoubleAttr_X) > 0.999) {
+            totalValue += v[i];
+        }
+
+        for (int j = 0; j < i; j++) {
+            if (isRelationInKnapsackVariable[i][j].get(GRB_DoubleAttr_X) > 0.999) {
+                totalValue += relation[i][j];
+            }
+        }
+    }
+
+    return totalValue;
 }
 
 int algE(int capacity, int quantItens, vector<int> s, vector<int> v, matriz &relation, vector<int> &itensMochila,

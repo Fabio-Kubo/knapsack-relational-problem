@@ -4,3 +4,5 @@ project(knapsack_problem)
 set(CMAKE_CXX_STANDARD 11)
 
 add_executable(knapsack_problem pmr.cpp pmr.h pmr_e_h.cpp pmr_e_h.h)
+
+target_link_libraries(knapsack_problem /Library/gurobi800/mac64/lib/libgurobi_c++.a)
