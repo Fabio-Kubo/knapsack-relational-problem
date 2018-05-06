@@ -31,7 +31,7 @@ typedef struct Item {
     double valuePerWeight;
     double valueRelations;
 
-    Item(int index, int value, int weight, int priority) : index(index), value(value),
+    Item(int index, int value, int weight, double priority) : index(index), value(value),
                                                            weight(weight), priority(priority) {
         valuePerWeight = 0;
         valueRelations = 0;
@@ -57,7 +57,7 @@ void initializeItemsBacktracking(vector<int> &v, vector<int> &s) {
 
     for (int i = 0; i < problemParameters.itemsQuantity; i++) {
         //set priority with weight value for performance reasons
-        //items.emplace_back(i, v[i], s[i], s[i]);
+        items.push_back(Item(i, v[i], s[i], s[i]));
     }
 }
 
@@ -84,8 +84,8 @@ double calculatePriorityB(int i, vector<int> &v, vector<int> &s) {
 void initializeItemsHeuristic(vector<int> &v, vector<int> &s) {
 
     for (int i = 0; i < problemParameters.itemsQuantity; i++) {
-        //items.emplace_back(i, v[i], s[i], calculatePriorityA(v[i], s[i]));
-        //items.emplace_back(i, v[i], s[i], calculatePriorityB(i, v, s));
+        items.push_back(Item(i, v[i], s[i], calculatePriorityA(v[i], s[i])));
+        items.push_back(Item(i, v[i], s[i], calculatePriorityB(i, v, s)));
     }
 }
 
