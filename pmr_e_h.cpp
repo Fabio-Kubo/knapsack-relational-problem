@@ -2,7 +2,7 @@
  * MC658 - Projeto e Análise de Algoritmos III - 1s2018
  * Prof: Flavio Keidi Miyazawa
  * PED: Francisco Jhonatas Melo da Silva
- * Usa ideias e código de Mauro Mulati e Flávio Keidi Miyazawa 
+ * Usa ideias e código de Mauro Mulati e Flávio Keidi Miyazawa
  ******************************************************************************/
 
 /*******************************************************************************
@@ -163,20 +163,27 @@ int algExato(int capacity, int quantItens, vector<int> s, vector<int> v, matriz 
     GRBLinExpr knapsackWeight;
 
     for (int i = 0; i < quantItens; i++) {
-        isItemInKnapsackVariable[i] = model.addVar(0.0, 1.0, v[i], GRB_BINARY, "");
-        knapsackWeight += isItemInKnapsackVariable[i] * s[i];
-
-        for (int j = 0; j < quantItens; j++) {
-            isRelationInKnapsackVariable[i][j] = model.addVar(0.0, 1.0, relation[i][j] / 2, GRB_BINARY, "");
-
-            model.addConstr(isRelationInKnapsackVariable[i][j] <= isItemInKnapsackVariable[i]);
-            model.addConstr(isRelationInKnapsackVariable[i][j] <= isItemInKnapsackVariable[j]);
-            model.addConstr(isRelationInKnapsackVariable[i][j] >= isItemInKnapsackVariable[i] + isItemInKnapsackVariable[j] - 1);
-        }
+      isItemInKnapsackVariable[i] = model.addVar(0.0, 1.0, v[i], GRB_BINARY, "");
+      knapsackWeight += isItemInKnapsackVariable[i] * s[i];
     }
 
-    //model.update();
     model.addConstr(knapsackWeight <= capacity);
+
+    for (int i = 0; i < quantItens; i++) {
+        for (int j = 0; j < quantItens; j++) {
+              isRelationInKnapsackVariable[i][j] = model.addVar(0.0, 1.0, relation[i][j] / 2, GRB_BINARY, "");
+
+              GRBLinExpr exprA, exprB, exprC;
+
+              exprA = isRelationInKnapsackVariable[i][j] - isItemInKnapsackVariable[i];
+              exprB = isRelationInKnapsackVariable[i][j] - isItemInKnapsackVariable[j];
+              exprC = isRelationInKnapsackVariable[i][j] - isItemInKnapsackVariable[i] - isItemInKnapsackVariable[j];
+
+              model.addConstr(exprA <= 0);
+              model.addConstr(exprB <= 0);
+              model.addConstr(exprC >= -1);
+        }
+    }
 
     model.update();
     model.optimize();
@@ -187,6 +194,7 @@ int algExato(int capacity, int quantItens, vector<int> s, vector<int> v, matriz 
 
         if (isItemInKnapsackVariable[i].get(GRB_DoubleAttr_X) > 0.999) {
             totalValue += v[i];
+            itensMochila[i] = 1;
         }
 
         for (int j = 0; j < i; j++) {
@@ -248,5 +256,3 @@ int algH(int capacity, int quantItens, vector<int> s, vector<int> v, matriz &rel
 
     return currentTotalValue;
 }
-
-

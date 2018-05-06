@@ -1,3 +1,11 @@
 #Clion files
 .idea
 cmake-build-debug/
+
+#Build files
+*.o
+pmr
+gurobi-results.txt
+
+#Mac files
+.DS_Store
