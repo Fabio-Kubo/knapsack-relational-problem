@@ -57,7 +57,7 @@ void initializeItemsBacktracking(vector<int> &v, vector<int> &s) {
 
     for (int i = 0; i < problemParameters.itemsQuantity; i++) {
         //set priority with weight value for performance reasons
-        items.emplace_back(i, v[i], s[i], s[i]);
+        //items.emplace_back(i, v[i], s[i], s[i]);
     }
 }
 
@@ -85,7 +85,7 @@ void initializeItemsHeuristic(vector<int> &v, vector<int> &s) {
 
     for (int i = 0; i < problemParameters.itemsQuantity; i++) {
         //items.emplace_back(i, v[i], s[i], calculatePriorityA(v[i], s[i]));
-        items.emplace_back(i, v[i], s[i], calculatePriorityB(i, v, s));
+        //items.emplace_back(i, v[i], s[i], calculatePriorityB(i, v, s));
     }
 }
 

@@ -1,6 +1,6 @@
 CC=g++
 #utilize aqui o path completo para a pasta do gurobi em seu pc
-CFLAGS=-I /Library/gurobi800/mac64/include/ -L /Library/gurobi800/mac64/lib/ -lgurobi_c++ -lgurobi80 -lm -lstdc++
+CFLAGS=-I /Users/caiouvini/Downloads/gurobi752/mac64/include/ -L /Users/caiouvini/Downloads/gurobi752/mac64/lib/ -lgurobi_c++ -lgurobi75 -lm -lstdc++
 DEPS = pmr.h
 OBJ = pmr.o pmr_e_h.o 
 
