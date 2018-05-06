@@ -85,7 +85,7 @@ void initializeItemsHeuristic(vector<int> &v, vector<int> &s) {
 
     for (int i = 0; i < problemParameters.itemsQuantity; i++) {
         items.push_back(Item(i, v[i], s[i], calculatePriorityA(v[i], s[i])));
-        items.push_back(Item(i, v[i], s[i], calculatePriorityB(i, v, s)));
+        //items.push_back(Item(i, v[i], s[i], calculatePriorityB(i, v, s)));
     }
 }
 
