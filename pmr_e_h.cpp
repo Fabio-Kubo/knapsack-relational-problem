@@ -145,67 +145,6 @@ void backtracking(int i, int currentValue, int currentWeight, vector<int> &curre
     }
 }
 
-int algExato(int capacity, int quantItens, vector<int> s, vector<int> v, matriz &relation, vector<int>& itensMochila, int maxTime) {
-
-    GRBEnv env = GRBEnv();
-    GRBModel model = GRBModel(env);
-    model.set(GRB_StringAttr_ModelName, "Problema da Mochila Relacional");
-
-    if(maxTime != 0) {
-        model.getEnv().set(GRB_DoubleParam_TimeLimit, maxTime);
-    }
-
-    model.set(GRB_IntAttr_ModelSense, GRB_MAXIMIZE);
-    model.set(GRB_IntParam_Presolve, 0);
-
-    //creating variables
-    vector<GRBVar> isItemInKnapsackVariable(quantItens);
-    vector< vector<GRBVar> > isRelationInKnapsackVariable(quantItens, vector<GRBVar>(quantItens));
-    GRBLinExpr knapsackWeight;
-
-    for (int i = 0; i < quantItens; i++) {
-      isItemInKnapsackVariable[i] = model.addVar(0.0, 1.0, v[i], GRB_BINARY, "");
-      knapsackWeight += isItemInKnapsackVariable[i] * s[i];
-    }
-
-    model.addConstr(knapsackWeight <= capacity);
-
-    for (int i = 0; i < quantItens; i++) {
-        for (int j = 0; j < quantItens; j++) {
-              isRelationInKnapsackVariable[i][j] = model.addVar(0.0, 1.0, relation[i][j] / 2, GRB_BINARY, "");
-
-              GRBLinExpr exprA, exprB, exprC;
-              exprA = isRelationInKnapsackVariable[i][j] - isItemInKnapsackVariable[i];
-              exprB = isRelationInKnapsackVariable[i][j] - isItemInKnapsackVariable[j];
-              exprC = isRelationInKnapsackVariable[i][j] - isItemInKnapsackVariable[i] - isItemInKnapsackVariable[j];
-
-              model.addConstr(exprA <= 0);
-              model.addConstr(exprB <= 0);
-              model.addConstr(exprC >= -1);
-        }
-    }
-
-    model.update();
-    model.optimize();
-
-    int totalValue = 0;
-
-    for (int i = 0; i < quantItens; i++) {
-
-        if (isItemInKnapsackVariable[i].get(GRB_DoubleAttr_X) > 0.999) {
-            totalValue += v[i];
-            itensMochila[i] = 1;
-        }
-
-        for (int j = 0; j < i; j++) {
-            if (isRelationInKnapsackVariable[i][j].get(GRB_DoubleAttr_X) > 0.999) {
-                totalValue += relation[i][j];
-            }
-        }
-    }
-
-    return totalValue;
-}
 
 int algE(int capacity, int quantItens, vector<int> s, vector<int> v, matriz &relation, vector<int> &itensMochila,
          int maxTime) {
@@ -255,4 +194,70 @@ int algH(int capacity, int quantItens, vector<int> s, vector<int> v, matriz &rel
     }
 
     return currentTotalValue;
+}
+
+int algExato(int capacity, int quantItens, vector<int> s, vector<int> v, matriz &relation, vector<int>& itensMochila, int maxTime) {
+
+    GRBEnv env = GRBEnv();
+    GRBModel model = GRBModel(env);
+    model.set(GRB_StringAttr_ModelName, "Problema da Mochila Relacional");
+
+    if(maxTime != 0) {
+        model.getEnv().set(GRB_DoubleParam_TimeLimit, maxTime);
+    }
+
+    model.set(GRB_IntAttr_ModelSense, GRB_MAXIMIZE);
+    model.set(GRB_IntParam_Presolve, 0);
+
+    vector<int> auxItensMochila(quantItens, 0);
+    double cutoff = algH(capacity, quantItens, s, v, relation, auxItensMochila, maxTime);
+    model.set(GRB_DoubleParam_Cutoff, cutoff );
+
+    //creating variables
+    vector<GRBVar> isItemInKnapsackVariable(quantItens);
+    vector< vector<GRBVar> > isRelationInKnapsackVariable(quantItens, vector<GRBVar>(quantItens));
+    GRBLinExpr knapsackWeight;
+
+    for (int i = 0; i < quantItens; i++) {
+      isItemInKnapsackVariable[i] = model.addVar(0.0, 1.0, v[i], GRB_BINARY, "");
+      knapsackWeight += isItemInKnapsackVariable[i] * s[i];
+    }
+
+    model.addConstr(knapsackWeight <= capacity);
+
+    for (int i = 0; i < quantItens; i++) {
+        for (int j = 0; j < quantItens; j++) {
+              isRelationInKnapsackVariable[i][j] = model.addVar(0.0, 1.0, relation[i][j] / 2, GRB_BINARY, "");
+
+              GRBLinExpr exprA, exprB, exprC;
+              exprA = isRelationInKnapsackVariable[i][j] - isItemInKnapsackVariable[i];
+              exprB = isRelationInKnapsackVariable[i][j] - isItemInKnapsackVariable[j];
+              exprC = isRelationInKnapsackVariable[i][j] - isItemInKnapsackVariable[i] - isItemInKnapsackVariable[j];
+
+              model.addConstr(exprA <= 0);
+              model.addConstr(exprB <= 0);
+              model.addConstr(exprC >= -1);
+        }
+    }
+
+    model.update();
+    model.optimize();
+
+    int totalValue = 0;
+
+    for (int i = 0; i < quantItens; i++) {
+
+        if (isItemInKnapsackVariable[i].get(GRB_DoubleAttr_X) > 0.999) {
+            totalValue += v[i];
+            itensMochila[i] = 1;
+        }
+
+        for (int j = 0; j < i; j++) {
+            if (isRelationInKnapsackVariable[i][j].get(GRB_DoubleAttr_X) > 0.999) {
+                totalValue += relation[i][j];
+            }
+        }
+    }
+
+    return totalValue;
 }
