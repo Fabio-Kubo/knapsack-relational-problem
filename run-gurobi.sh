@@ -1,5 +1,3 @@
-make clean
-make
 for file in testes/*
 do
   echo "========================================================================" >> gurobi-results.txt

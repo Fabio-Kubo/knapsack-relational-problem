@@ -156,6 +156,7 @@ int algExato(int capacity, int quantItens, vector<int> s, vector<int> v, matriz 
     }
 
     model.set(GRB_IntAttr_ModelSense, GRB_MAXIMIZE);
+    model.set(GRB_IntParam_Presolve, 0);
 
     //creating variables
     vector<GRBVar> isItemInKnapsackVariable(quantItens);
